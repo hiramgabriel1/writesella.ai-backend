@@ -1,0 +1,12 @@
+services:
+  postgresDB:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=writtesellai
+      - POSTGRES_PASSWORD=writtesellai
+      - POSTGRES_DB=writtesellai
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    ports:
+      - "5436:5432"
