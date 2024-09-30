@@ -1,9 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
+  app.useGlobalGuards()
   app.enableCors({
     origin: ['http://localhost:5173/'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -15,7 +17,18 @@ async function bootstrap() {
     maxAge: 3600,
   });
 
-  await app.listen(3000);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
+
+  await app.listen(process.env.PORT);
 }
 
 bootstrap();
