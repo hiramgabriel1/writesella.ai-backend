@@ -12,7 +12,7 @@ export class ConfirmationsService {
                 html: `
                 <h1>Confirm your account</h1>
                 <p>Click on the link below to confirm your account</p>
-                <a href="${process.env.FRONTEND_URL}/confirm-account/${userEmail}">Confirm your account</a>
+                // // <a href="${process.env.FRONTEND_URL}/confirm-account/${userEmail}">Confirm your account</a>
                 `
             })
 

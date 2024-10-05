@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from './entities/user.entity';
-import { Repository } from 'typeorm';
 import { encryptPassword } from 'src/utils/password.encrypt';
-import { ConfirmationsService } from 'src/confirmations/confirmations.service';
+// import { ConfirmationsService } from '../confirmations/confirmations.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { User } from '@prisma/client';
 
 /**
  * this class is used to interact with the database and perform CRUD operations on the user table.
@@ -12,10 +11,9 @@ import { ConfirmationsService } from 'src/confirmations/confirmations.service';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>,
+    private prisma: PrismaService,
 
-    private confirmationServices: ConfirmationsService,
+    // private confirmationServices: ConfirmationsService,
   ) {}
 
   /**
@@ -27,7 +25,7 @@ export class UserService {
    */
   async isUserExists(email: string): Promise<boolean> {
     try {
-      const find = await this.userRepository.findOne({ where: { email } });
+      const find = await this.prisma.user.findFirst({ where: { email } });
 
       return find ? true : false;
     } catch (error) {
@@ -42,7 +40,9 @@ export class UserService {
    * @param createUserDto
    * @returns
    */
-  async registerUser(createUserDto: CreateUserDto): Promise<{status: number, message: string, data: UserEntity}> {
+  async registerUser(
+    createUserDto: CreateUserDto,
+  ): Promise<{ status: number; message: string; data: User | null }> {
     try {
       const searchUser = await this.isUserExists(createUserDto.email);
 
@@ -59,10 +59,11 @@ export class UserService {
         password: await encryptPassword(createUserDto.password),
       };
 
-      const createUserInstance = this.userRepository.create(user);
-      const userRegistered = await this.userRepository.save(createUserInstance);
+      const saveUser = await this.prisma.user.create({
+        data: user,
+      });
 
-      if (!userRegistered) {
+      if (!saveUser) {
         return {
           status: 400,
           message: 'User not created',
@@ -71,23 +72,21 @@ export class UserService {
       }
 
       // ? send confirmation email to user
-      const sendConfirmation =
-        await this.confirmationServices.sendConfirmAccountUser(
-          userRegistered.email,
-        );
+      // const sendConfirmation =
+      //   await this.confirmationServices.sendConfirmAccountUser(user.email);
 
-      if(!sendConfirmation) {
-        return {
-          status: 400,
-          message: 'User created but confirmation email not sent',
-          data: null
-        };
-      }
+      // if (!sendConfirmation) {
+      //   return {
+      //     status: 400,
+      //     message: 'User created but confirmation email not sent',
+      //     data: saveUser,
+      //   };
+      // }
 
       return {
         status: 201,
         message: 'User created',
-        data: userRegistered,
+        data: saveUser,
       };
     } catch (error) {
       throw new Error(error);
