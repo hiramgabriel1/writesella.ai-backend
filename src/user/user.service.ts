@@ -16,8 +16,8 @@ export class UserService {
   constructor(
     private prisma: PrismaService,
     private emailService: emailServices,
-    private jwtService:JwtService
-  ) {}
+    private jwtService: JwtService
+  ) { }
 
   /**
    *
@@ -76,12 +76,12 @@ export class UserService {
 
       const token = await this.jwtService.signAsync(
         { email: user.email },
-        { secret: process.env.SECRET } 
+        { secret: process.env.SECRET }
       );
-            // ? send confirmation email to user
+      // ? send confirmation email to user
       const sendConfirmation = await this.emailService.sendEmail(
         CONST_CONFIRM_ACCOUNT_SUBJECT,
-        CONFIRM_ACCOUNT(user.firstName,token),
+        CONFIRM_ACCOUNT(user.firstName, token),
         user.email,
         CONST_CONFIRM_ACCOUNT_TEXT
       );//send user email and token  to incrase security
@@ -101,6 +101,55 @@ export class UserService {
       };
     } catch (error) {
       throw new Error(error);
+    }
+  }
+
+
+  async confirmAccount(token: string) {
+    try {
+      if (!token) {
+        return {
+          status: 500,
+          message: "token is necesary",
+          data: null
+        }
+      }
+
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.SECRET,
+      });
+
+
+      if (!payload.email) {
+        return {
+          status: 500,
+          message: "token is invalid",
+          data: null
+        }
+      }
+
+      const user = await this.isUserExists(payload.email);
+
+      if (!user) {
+        return {
+          status: 404,
+          message: "user not found",
+          data: null
+        }
+      }
+
+      ///const updated = ...
+
+      ///if (!updated) {
+      // return {
+      //   status: 500,
+      //   message: "Internal server error",
+      //   data: null
+      // }
+      //}
+
+    } catch (error) {
+      throw new Error(error)
     }
   }
 }
