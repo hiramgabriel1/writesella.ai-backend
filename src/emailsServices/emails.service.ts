@@ -1,8 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { transporter } from 'src/config/nodemailer.config';
 
+
+/**
+ * This class is used to send email 
+ */
 @Injectable()
 export class emailServices {
+
+    /**
+     * this method is used to send all emails from app
+     * 
+     * @param subject subject of email
+     * @param template templete of email
+     * @param userEmail user to send email
+     * @param text text of email
+     * @returns if emails is sent succesfully return true else false
+     */
   async sendEmail(
     subject: string,
     template: string,

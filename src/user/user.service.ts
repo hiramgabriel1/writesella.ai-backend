@@ -76,15 +76,15 @@ export class UserService {
 
       const token = await this.jwtService.signAsync(
         { email: user.email },
-        { secret: process.env.secret } 
+        { secret: process.env.SECRET } 
       );
             // ? send confirmation email to user
-      const sendConfirmation =await this.emailService.sendEmail(
+      const sendConfirmation = await this.emailService.sendEmail(
         CONST_CONFIRM_ACCOUNT_SUBJECT,
         CONFIRM_ACCOUNT(user.firstName,token),
         user.email,
         CONST_CONFIRM_ACCOUNT_TEXT
-      );//send user email and token incrase security
+      );//send user email and token  to incrase security
 
       if (!sendConfirmation) {
         return {
