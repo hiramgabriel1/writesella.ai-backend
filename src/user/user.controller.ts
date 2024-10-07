@@ -20,5 +20,5 @@ export class UserController {
   @Patch("/confirm-account/:token")
   confirmAccount(@Param('token') token: string) {
     return this.userService.confirmAccount(token);
-  }z
+  }
 }
