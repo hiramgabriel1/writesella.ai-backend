@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { encryptPassword } from 'src/utils/password.encrypt';
-// import { ConfirmationsService } from '../confirmations/confirmations.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
+import { emailServices } from 'src/emailsServices/emails.service';
+import { JwtService } from '@nestjs/jwt';
+import { CONST_CONFIRM_ACCOUNT_SUBJECT, CONST_CONFIRM_ACCOUNT_TEXT } from 'src/utils/templetesEmails/confirmAccount/confirmAccount.const';
+import { CONFIRM_ACCOUNT } from 'src/utils/templetesEmails/confirmAccount/confirmAccount';
 
 /**
  * this class is used to interact with the database and perform CRUD operations on the user table.
@@ -12,8 +15,8 @@ import { User } from '@prisma/client';
 export class UserService {
   constructor(
     private prisma: PrismaService,
-
-    // private confirmationServices: ConfirmationsService,
+    private emailService: emailServices,
+    private jwtService:JwtService
   ) {}
 
   /**
@@ -71,17 +74,25 @@ export class UserService {
         };
       }
 
-      // ? send confirmation email to user
-      // const sendConfirmation =
-      //   await this.confirmationServices.sendConfirmAccountUser(user.email);
+      const token = await this.jwtService.signAsync(
+        { email: user.email },
+        { secret: process.env.secret } 
+      );
+            // ? send confirmation email to user
+      const sendConfirmation =await this.emailService.sendEmail(
+        CONST_CONFIRM_ACCOUNT_SUBJECT,
+        CONFIRM_ACCOUNT(user.firstName,token),
+        user.email,
+        CONST_CONFIRM_ACCOUNT_TEXT
+      );//send user email and token incrase security
 
-      // if (!sendConfirmation) {
-      //   return {
-      //     status: 400,
-      //     message: 'User created but confirmation email not sent',
-      //     data: saveUser,
-      //   };
-      // }
+      if (!sendConfirmation) {
+        return {
+          status: 400,
+          message: 'User created but confirmation email not sent',
+          data: saveUser,
+        };
+      }
 
       return {
         status: 201,
