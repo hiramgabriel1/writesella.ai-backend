@@ -60,6 +60,7 @@ export class UserService {
       const user = {
         ...createUserDto,
         password: await encryptPassword(createUserDto.password),
+        isActive: false
       };
 
       const saveUser = await this.prisma.user.create({
@@ -138,15 +139,27 @@ export class UserService {
         }
       }
 
-      ///const updated = ...
+      const updated = await this.prisma.user.update({
+        where: {
+          email: payload.email
+        },
+        data: {
+          isActive: true
+        }
+      })
 
-      ///if (!updated) {
-      // return {
-      //   status: 500,
-      //   message: "Internal server error",
-      //   data: null
-      // }
-      //}
+      if (!updated) {
+        return {
+          status: 500,
+          message: "Internal server error",
+          data: null
+        }
+      }
+      return {
+        status: 200,
+        message: "user activated",
+        data: updated
+      }
 
     } catch (error) {
       throw new Error(error)
