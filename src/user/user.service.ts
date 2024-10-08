@@ -7,12 +7,14 @@ import { emailServices } from 'src/emailsServices/emails.service';
 import { JwtService } from '@nestjs/jwt';
 import { CONST_CONFIRM_ACCOUNT_SUBJECT, CONST_CONFIRM_ACCOUNT_TEXT } from 'src/utils/templetesEmails/confirmAccount/confirmAccount.const';
 import { CONFIRM_ACCOUNT } from 'src/utils/templetesEmails/confirmAccount/confirmAccount';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 /**
  * this class is used to interact with the database and perform CRUD operations on the user table.
  */
 @Injectable()
 export class UserService {
+
   constructor(
     private prisma: PrismaService,
     private emailService: emailServices,
@@ -120,7 +122,7 @@ export class UserService {
         secret: process.env.SECRET,
       });
 
-
+      console.log(payload);
       if (!payload.email) {
         return {
           status: 500,
@@ -163,6 +165,49 @@ export class UserService {
 
     } catch (error) {
       throw new Error(error)
+    }
+  }
+
+  async updateUser(userId: number, updateUserDto: UpdateUserDto) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: userId
+        }
+      })
+  
+      if(!user){
+        return{
+          status:404,
+          message:"User not found",
+          data:null
+        }
+      }
+  
+      const updated = await this.prisma.user.update({
+        where:{
+          id:userId
+        },
+        data:{
+          ...updateUserDto
+        }
+      })
+  
+      if(!user){
+        return {
+          status: 500,
+          message:"Internal server error",
+          data:null
+        }
+      }
+  
+      return {
+        status: 200,
+        message: "User updated",
+        data: updated
+      }
+    } catch (error) {
+        throw new Error(error)
     }
   }
 }
