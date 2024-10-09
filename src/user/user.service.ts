@@ -3,7 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { encryptPassword } from 'src/utils/password.encrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
-import { emailServices } from 'src/emailsServices/emails.service';
+import { EmailServices } from 'src/emailsServices/emails.service';
 import { JwtService } from '@nestjs/jwt';
 import { CONST_CONFIRM_ACCOUNT_SUBJECT, CONST_CONFIRM_ACCOUNT_TEXT } from 'src/utils/templetesEmails/confirmAccount/confirmAccount.const';
 import { CONFIRM_ACCOUNT } from 'src/utils/templetesEmails/confirmAccount/confirmAccount';
@@ -17,7 +17,7 @@ export class UserService {
 
   constructor(
     private prisma: PrismaService,
-    private emailService: emailServices,
+    private emailService: EmailServices,
     private jwtService: JwtService
   ) { }
 
@@ -81,7 +81,9 @@ export class UserService {
         { email: user.email },
         { secret: process.env.SECRET }
       );
-      // ? send confirmation email to user
+      
+
+
       const sendConfirmation = await this.emailService.sendEmail(
         CONST_CONFIRM_ACCOUNT_SUBJECT,
         CONFIRM_ACCOUNT(user.firstName, token),
@@ -122,7 +124,6 @@ export class UserService {
         secret: process.env.SECRET,
       });
 
-      console.log(payload);
       if (!payload.email) {
         return {
           status: 500,
@@ -193,7 +194,7 @@ export class UserService {
         }
       })
   
-      if(!user){
+      if(!updated){
         return {
           status: 500,
           message:"Internal server error",
