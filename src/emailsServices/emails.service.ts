@@ -6,7 +6,7 @@ import { transporter } from 'src/config/nodemailer.config';
  * This class is used to send email 
  */
 @Injectable()
-export class emailServices {
+export class EmailServices {
 
     /**
      * this method is used to send all emails from app
@@ -33,11 +33,7 @@ export class emailServices {
 
     return new Promise((resolve, reject) => {
       transporter.sendMail(mailData, (error, info) => {
-        if (error) {
-          resolve(false); // Resolve with false if exist error
-        } else {
-          resolve(true); // Resolve with true if dont exist error and  send email was succesfully
-        }
+        ! error ? resolve(true): resolve(false);
       });
     });
   }
